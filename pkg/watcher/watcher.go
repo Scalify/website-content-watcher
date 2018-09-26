@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Scalify/website-content-watcher/pkg/api"
 	"github.com/Sirupsen/logrus"
@@ -19,8 +20,8 @@ type Watcher struct {
 }
 
 // New returns a new watcher instance
-func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient, configFile string, config *api.Config) (*Watcher, error) {
-	w := &Watcher{
+func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient, configFile string, config *api.Config) *Watcher {
+	return &Watcher{
 		logger:     logger,
 		storage:    storage,
 		puppet:     puppet,
@@ -28,16 +29,23 @@ func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient,
 		configFile: configFile,
 		config:     config,
 	}
-
-	return w, w.checkJobs()
 }
 
-func (w *Watcher) checkJobs() error {
+// CheckConfig checks the config for common and/or known mistakes
+func (w *Watcher) CheckConfig() error {
 	for _, job := range w.config.Jobs {
 		for _, not := range job.Notify {
 			if _, err := w.getNotifier(not.Type); err != nil {
 				return err
 			}
+		}
+
+		if _, err := cron.Parse(job.Schedule); err != nil {
+			return fmt.Errorf("error parsing cron schedule string for job: %v", err)
+		}
+
+		if len(strings.TrimSpace(job.Name)) == 0 {
+			return fmt.Errorf("empty or invalid job name: %q", job.Name)
 		}
 	}
 
@@ -51,7 +59,7 @@ func (w *Watcher) AddNotifier(n notifier) error {
 		return fmt.Errorf("notifier %q is already registrered", key)
 	}
 
-	w.logger.Debugf("Added notifier %q to watcher", key)
+	w.logger.Infof("Added notifier %q to watcher", key)
 	w.notifiers[key] = n
 	return nil
 }
