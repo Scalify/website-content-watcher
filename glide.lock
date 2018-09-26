@@ -1,0 +1,45 @@
+hash: c10e1de7fb1376ee13fb72a08ccd30af733025745d1b0c7fd350bb4eb43c9a64
+updated: 2018-09-25T14:07:08.460075527+02:00
+imports:
+- name: github.com/ghodss/yaml
+  version: c7ce16629ff4cd059ed96ed06419dd3856fd3577
+- name: github.com/go-redis/redis
+  version: f3bba01df2026fc865f7782948845db9cf44cf23
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+  - internal/singleflight
+  - internal/util
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/robfig/cron
+  version: b41be1df696709bb6395fe435af20370037c0b4c
+- name: github.com/Scalify/puppet-master-client-go
+  version: 7256a862537b3bde2153d6efb609a5e8f4e44dc6
+- name: github.com/Sirupsen/logrus
+  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+- name: github.com/spf13/cobra
+  version: 8d114be902bc9f08717804830a55c48378108a28
+- name: github.com/spf13/pflag
+  version: 298182f68c66c05229eb03ac171abe6e309ee79a
+- name: golang.org/x/crypto
+  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: b09afc3d579e346c4a7e4705953acaf6f9e551bd
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/alexcesaro/quotedprintable.v3
+  version: 2caba252f4dc53eaf6b553000885530023f54623
+- name: gopkg.in/gomail.v2
+  version: 81ebce5c23dfd25c6c67194b37d3dd3f338c98b1
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []

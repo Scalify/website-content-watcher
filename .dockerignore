@@ -1,0 +1,5 @@
+exec
+vendor
+.envrc
+.git
+.gitignore

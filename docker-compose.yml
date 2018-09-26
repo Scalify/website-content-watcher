@@ -1,0 +1,38 @@
+version: '3.5'
+services:
+  watcher:
+#    image: registry.github.com/Scalify/website-content-watcher
+    build: .
+    environment:
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+      - "REDIS_DB=1"
+      - "VERBOSE=true"
+
+      - "SMTP_HOST=mailcatcher"
+      - "SMTP_PORT=1025"
+      - "MAIL_NOTIFIER_ENABLED=true"
+      - "MAIL_SENDER_ADDRESS=alex@scalify.me"
+
+      - "PUPPET_MASTER_ENDPOINT=http://docker.for.mac.localhost"
+      - "PUPPET_MASTER_API_TOKEN=puppet"
+    volumes:
+      - "./exec:/exec"
+    command: "watch /exec/config.yaml"
+    links:
+      - redis
+
+  redis:
+    image: redis:4-alpine
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    expose:
+      - "1025"
+    ports:
+      - "1025:1025"
+      - "1080:1080"
