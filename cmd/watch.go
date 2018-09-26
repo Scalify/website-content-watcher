@@ -78,7 +78,10 @@ var watchCmd = &cobra.Command{
 			logger.Fatalf("failed to load config from %q: %v", configFile, err)
 		}
 
-		w := watcher.New(logger.WithFields(logrus.Fields{}), redisClient, pmClient, configFile, conf)
+		w, err := watcher.New(logger.WithFields(logrus.Fields{}), redisClient, pmClient, configFile, conf)
+		if err != nil {
+			logger.Fatal(err)
+		}
 
 		addNotifiers(logger, w, cfg)
 

@@ -2,7 +2,6 @@ package watcher
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Scalify/website-content-watcher/pkg/api"
 	"github.com/Sirupsen/logrus"
@@ -20,8 +19,8 @@ type Watcher struct {
 }
 
 // New returns a new watcher instance
-func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient, configFile string, config *api.Config) *Watcher {
-	return &Watcher{
+func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient, configFile string, config *api.Config) (*Watcher, error) {
+	w := &Watcher{
 		logger:     logger,
 		storage:    storage,
 		puppet:     puppet,
@@ -29,6 +28,20 @@ func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient,
 		configFile: configFile,
 		config:     config,
 	}
+
+	return w, w.checkJobs()
+}
+
+func (w *Watcher) checkJobs() error {
+	for _, job := range w.config.Jobs {
+		for _, not := range job.Notify {
+			if _, err := w.getNotifier(not.Type); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // AddNotifier adds a notifier to the list of known notifiers.
@@ -41,21 +54,6 @@ func (w *Watcher) AddNotifier(n notifier) error {
 	w.logger.Debugf("Added notifier %q to watcher", key)
 	w.notifiers[key] = n
 	return nil
-}
-
-// Run the jobs once.
-func (w *Watcher) Run() {
-	w.logger.Info("Running watcher ...")
-
-	for _, job := range w.config.Jobs {
-		if err := w.do(&job); err != nil {
-			w.logger.Error(err)
-		}
-	}
-
-	time.Sleep(1 * time.Second)
-
-	w.logger.Info("done")
 }
 
 func (w *Watcher) do(job *api.Job) error {
@@ -107,9 +105,9 @@ func diff(newValues, oldValues map[string]string, job *api.Job) []api.Diff {
 
 func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
 	for _, notify := range job.Notify {
-		not, ok := w.notifiers[notify.Type]
-		if !ok {
-			return fmt.Errorf("notifier %q not found. It is either not available or not enabled", notify.Type)
+		not, err := w.getNotifier(notify.Type)
+		if err != nil {
+			return err
 		}
 
 		if err := not.Notify(job.Name, notify.Value, diff); err != nil {
@@ -118,6 +116,15 @@ func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
 	}
 
 	return nil
+}
+
+func (w *Watcher) getNotifier(name string) (notifier, error) {
+	not, ok := w.notifiers[name]
+	if !ok {
+		return nil, fmt.Errorf("notifier %q not found. It is either not available or not enabled", name)
+	}
+
+	return not, nil
 }
 
 func (w *Watcher) cronFunc(job *api.Job) func() {
