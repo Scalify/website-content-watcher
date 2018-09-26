@@ -5,7 +5,7 @@ COPY glide.yaml glide.lock ./
 RUN glide install --strip-vendor
 
 COPY . ./
-RUN CGO_ENABLED=0 go build -a -ldflags '-s' -installsuffix cgo -o bin/watcher .
+RUN CGO_ENABLED=0 go build -a -ldflags '-s' -installsuffix cgo -o bin/website-content-watcher .
 
 
 FROM alpine
