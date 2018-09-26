@@ -22,8 +22,6 @@ services:
     networks:
       - default
       - puppet_master
-    links:
-      - redis
 
   redis:
     image: redis:4-alpine
