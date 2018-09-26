@@ -1,0 +1,8 @@
+jobs:
+  - name: print current ip
+    schedule: "0 */5 * * * *"
+    notify:
+      - type: mail
+        value: notify@example.com
+    notify_on_change_only: false
+    code_file: ./ip_echo/code.mjs
