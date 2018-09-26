@@ -23,13 +23,13 @@ import (
 )
 
 type env struct {
-	Verbose              bool   `default:"false" split_words:"true"`
-	RedisHost            string `required:"true" split_words:"true"`
-	RedisPort            int    `required:"true" split_words:"true"`
 	RedisDb              int    `required:"true" split_words:"true"`
+	RedisPort            int    `required:"true" split_words:"true"`
+	RedisHost            string `required:"true" split_words:"true"`
 	PuppetMasterEndpoint string `required:"true" split_words:"true"`
 	PuppetMasterAPIToken string `required:"true" split_words:"true" envconfig:"PUPPET_MASTER_API_TOKEN"`
 	MailNotifierEnabled  bool   `default:"false" split_words:"true"`
+	Verbose              bool   `default:"false" split_words:"true"`
 }
 
 type mailEnv struct {
@@ -48,7 +48,9 @@ var watchCmd = &cobra.Command{
 		ctx := newExitHandlerContext(logger)
 
 		if len(args) < 1 {
-			cmd.Usage()
+			if err := cmd.Usage(); err != nil {
+				logger.Fatal(err)
+			}
 			os.Exit(1)
 		}
 
@@ -80,7 +82,9 @@ var watchCmd = &cobra.Command{
 
 		addNotifiers(logger, w, cfg)
 
-		w.RegisterCronJobs(c)
+		if err := w.RegisterCronJobs(c); err != nil {
+			logger.Fatal(err)
+		}
 		c.Start()
 
 		logger.Info("Started cron job.")
@@ -100,7 +104,9 @@ func addNotifiers(logger *logrus.Logger, w *watcher.Watcher, cfg env) {
 
 		mailClient := mail.New(gomail.NewDialer(mailCfg.SMTPHost, mailCfg.SMTPPort, mailCfg.SMTPUser, mailCfg.SMTPPass))
 		mailNotifier := notifier.NewMail(mailCfg.MailSenderAddress, mailClient)
-		w.AddNotifier(mailNotifier)
+		if err := w.AddNotifier(mailNotifier); err != nil {
+			logger.Fatal(err)
+		}
 	}
 }
 

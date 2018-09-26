@@ -48,6 +48,7 @@ func loadJSON(file string) (*api.Config, error) {
 	return parse(b)
 }
 
+// nolint: gosec
 func read(file string) ([]byte, error) {
 	b, err := ioutil.ReadFile(file)
 	if err != nil {

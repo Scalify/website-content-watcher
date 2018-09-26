@@ -90,7 +90,9 @@ func (m *Mail) Notify(jobName, target string, diff []api.Diff) error {
 
 func (m *Mail) renderTemplate(jobName string, diff []api.Diff) (string, error) {
 	t := template.New("mail")
-	t.Parse(mailTemplate)
+	if _, err := t.Parse(mailTemplate); err != nil {
+		return "", fmt.Errorf("failed to parse email template: %v", err)
+	}
 
 	buf := &bytes.Buffer{}
 	data := struct {

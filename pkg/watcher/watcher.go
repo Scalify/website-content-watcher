@@ -25,7 +25,7 @@ func New(logger *logrus.Entry, storage storageClient, puppet puppetMasterClient,
 		logger:     logger,
 		storage:    storage,
 		puppet:     puppet,
-		notifiers:  make(map[string]notifier, 0),
+		notifiers:  make(map[string]notifier),
 		configFile: configFile,
 		config:     config,
 	}
@@ -75,8 +75,19 @@ func (w *Watcher) do(job *api.Job) error {
 		return fmt.Errorf("failed to load old values: %v", err)
 	}
 
-	var diff []api.Diff
 	newValues := w.transformResults(pmJob.Results)
+	diff := diff(newValues, oldValues, job)
+	if err := w.notify(job, diff); err != nil {
+		return err
+	}
+
+	w.logger.Infof("Done running job %s", job.Name)
+
+	return w.setValues(job.Name, newValues)
+}
+func diff(newValues, oldValues map[string]string, job *api.Job) []api.Diff {
+	diff := make([]api.Diff, 0)
+
 	for key, newVal := range newValues {
 		oldVal, ok := oldValues[key]
 
@@ -91,16 +102,7 @@ func (w *Watcher) do(job *api.Job) error {
 		})
 	}
 
-	if len(diff) > 0 {
-		err := w.notify(job, diff)
-		if err != nil {
-			return err
-		}
-	}
-
-	w.logger.Infof("Done running job %s", job.Name)
-
-	return w.setValues(job.Name, newValues)
+	return diff
 }
 
 func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
@@ -118,14 +120,23 @@ func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
 	return nil
 }
 
-// RegisterCronJobs registers all jobs taken from config at the given cron instance
-func (w *Watcher) RegisterCronJobs(cron *cron.Cron) {
-	for _, job := range w.config.Jobs {
-		cron.AddFunc(job.Schedule, func() {
-
-			w.do(&job)
-		})
+func (w *Watcher) cronFunc(job *api.Job) func() {
+	return func() {
+		if err := w.do(job); err != nil {
+			w.logger.Error(err)
+		}
 	}
+}
+
+// RegisterCronJobs registers all jobs taken from config at the given cron instance
+func (w *Watcher) RegisterCronJobs(cron *cron.Cron) error {
+	for _, job := range w.config.Jobs {
+		if err := cron.AddFunc(job.Schedule, w.cronFunc(&job)); err != nil {
+			return fmt.Errorf("failed to register cron for job %q: %v", job.Name, err)
+		}
+	}
+
+	return nil
 }
 
 func (w *Watcher) transformResults(values map[string]interface{}) map[string]string {
