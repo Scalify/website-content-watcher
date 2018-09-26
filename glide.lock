@@ -1,5 +1,5 @@
-hash: c10e1de7fb1376ee13fb72a08ccd30af733025745d1b0c7fd350bb4eb43c9a64
-updated: 2018-09-25T14:07:08.460075527+02:00
+hash: 4ce6db5a53b15d3c09d9b7f1ea881770ff6c321e139fb699e6a7fae5eb1df794
+updated: 2018-09-26T11:14:22.41412764+02:00
 imports:
 - name: github.com/ghodss/yaml
   version: c7ce16629ff4cd059ed96ed06419dd3856fd3577
@@ -17,12 +17,14 @@ imports:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/kelseyhightower/envconfig
   version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/robfig/cron
   version: b41be1df696709bb6395fe435af20370037c0b4c
 - name: github.com/Scalify/puppet-master-client-go
   version: 7256a862537b3bde2153d6efb609a5e8f4e44dc6
 - name: github.com/Sirupsen/logrus
-  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+  version: a67f783a3814b8729bd2dac5780b5f78f8dbd64d
 - name: github.com/spf13/cobra
   version: 8d114be902bc9f08717804830a55c48378108a28
 - name: github.com/spf13/pflag
