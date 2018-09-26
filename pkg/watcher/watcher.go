@@ -131,6 +131,7 @@ func (w *Watcher) cronFunc(job *api.Job) func() {
 // RegisterCronJobs registers all jobs taken from config at the given cron instance
 func (w *Watcher) RegisterCronJobs(cron *cron.Cron) error {
 	for _, job := range w.config.Jobs {
+		w.logger.Debugf("Adding job %q with pattern %q", job.Name, job.Schedule)
 		if err := cron.AddFunc(job.Schedule, w.cronFunc(&job)); err != nil {
 			return fmt.Errorf("failed to register cron for job %q: %v", job.Name, err)
 		}
