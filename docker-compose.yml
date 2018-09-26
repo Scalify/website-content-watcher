@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   watcher:
-#    image: registry.github.com/Scalify/website-content-watcher
+    image: scalify/website-content-watcher
     build: .
     environment:
       - "REDIS_HOST=redis"
@@ -12,13 +12,16 @@ services:
       - "SMTP_HOST=mailcatcher"
       - "SMTP_PORT=1025"
       - "MAIL_NOTIFIER_ENABLED=true"
-      - "MAIL_SENDER_ADDRESS=alex@scalify.me"
+      - "MAIL_SENDER_ADDRESS=website-content-watcher@scalify.me"
 
-      - "PUPPET_MASTER_ENDPOINT=http://docker.for.mac.localhost"
+      - "PUPPET_MASTER_ENDPOINT=http://gateway"
       - "PUPPET_MASTER_API_TOKEN=puppet"
     volumes:
-      - "./exec:/exec"
-    command: "watch /exec/config.yaml"
+      - "./example:/example"
+    command: "watch /example/config.yaml"
+    networks:
+      - default
+      - puppet_master
     links:
       - redis
 
@@ -36,3 +39,9 @@ services:
     ports:
       - "1025:1025"
       - "1080:1080"
+
+networks:
+  default: {}
+  puppet_master:
+    external: true
+    name: puppet_master
