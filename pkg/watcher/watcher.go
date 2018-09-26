@@ -112,6 +112,10 @@ func diff(newValues, oldValues map[string]string, job *api.Job) []api.Diff {
 }
 
 func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
+	if len(diff) == 0 {
+		return nil
+	}
+
 	for _, notify := range job.Notify {
 		not, err := w.getNotifier(notify.Type)
 		if err != nil {
