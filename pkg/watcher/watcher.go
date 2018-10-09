@@ -52,6 +52,17 @@ func (w *Watcher) CheckConfig() error {
 	return nil
 }
 
+// RunNow executes all jobs instantly and in series
+func (w *Watcher) RunNow() error {
+	for _, job := range w.config.Jobs {
+		if err := w.do(&job); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // AddNotifier adds a notifier to the list of known notifiers.
 func (w *Watcher) AddNotifier(n notifier) error {
 	key := n.Key()
@@ -82,8 +93,8 @@ func (w *Watcher) do(job *api.Job) error {
 	}
 
 	newValues := w.transformResults(pmJob.Results)
-	diff := diff(newValues, oldValues, job)
-	if err := w.notify(job, diff); err != nil {
+	diff := diff(newValues, oldValues)
+	if err := w.notify(job, diff, newValues); err != nil {
 		return err
 	}
 
@@ -91,13 +102,14 @@ func (w *Watcher) do(job *api.Job) error {
 
 	return w.setValues(job.Name, newValues)
 }
-func diff(newValues, oldValues map[string]string, job *api.Job) []api.Diff {
+
+func diff(newValues, oldValues map[string]string) []api.Diff {
 	diff := make([]api.Diff, 0)
 
 	for key, newVal := range newValues {
 		oldVal, ok := oldValues[key]
 
-		if job.NotifyOnChangeOnly && ok && oldVal != "" && oldVal == newVal {
+		if ok && oldVal != "" && oldVal == newVal {
 			continue
 		}
 
@@ -111,8 +123,8 @@ func diff(newValues, oldValues map[string]string, job *api.Job) []api.Diff {
 	return diff
 }
 
-func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
-	if len(diff) == 0 {
+func (w *Watcher) notify(job *api.Job, diff []api.Diff, newValues map[string]string) error {
+	if len(diff) == 0 && job.NotifyOnChangeOnly {
 		return nil
 	}
 
@@ -122,7 +134,7 @@ func (w *Watcher) notify(job *api.Job, diff []api.Diff) error {
 			return err
 		}
 
-		if err := not.Notify(job.Name, notify.Value, diff); err != nil {
+		if err := not.Notify(job.Name, notify.Value, diff, newValues); err != nil {
 			return fmt.Errorf("failed to notify by %q: %v", notify.Type, err)
 		}
 	}

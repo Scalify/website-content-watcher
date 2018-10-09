@@ -20,5 +20,5 @@ type puppetMasterClient interface {
 
 type notifier interface {
 	Key() string
-	Notify(jobName, target string, diff []api.Diff) error
+	Notify(jobName, target string, diff []api.Diff, newValues map[string]string) error
 }

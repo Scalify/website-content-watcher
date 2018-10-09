@@ -30,6 +30,7 @@ type env struct {
 	PuppetMasterAPIToken string `required:"true" split_words:"true" envconfig:"PUPPET_MASTER_API_TOKEN"`
 	MailNotifierEnabled  bool   `default:"false" split_words:"true"`
 	Verbose              bool   `default:"false" split_words:"true"`
+	SingleExecution      bool   `default:"false" split_words:"true"`
 }
 
 type mailEnv struct {
@@ -84,6 +85,14 @@ var watchCmd = &cobra.Command{
 
 		if err := w.CheckConfig(); err != nil {
 			logger.Fatal(err)
+		}
+
+		if cfg.SingleExecution {
+			logger.Warn("Executing jobs only once and exit afterwards (SINGLE_EXECUTION=true)")
+			if err := w.RunNow(); err != nil {
+				logger.Fatal(err)
+			}
+			return
 		}
 
 		if err := w.RegisterCronJobs(c); err != nil {
