@@ -1,4 +1,4 @@
-FROM scalify/glide as builder
+FROM scalify/glide:0.13.2 as builder
 WORKDIR /go/src/github.com/Scalify/website-content-watcher
 
 COPY glide.yaml glide.lock ./
